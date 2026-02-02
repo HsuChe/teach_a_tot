@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Learning App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+      body {
+        font-family: 'Nunito', sans-serif;
+      }
+      .font-poppins {
+        font-family: 'Poppins', sans-serif;
+      }
+      @keyframes fade-in-fast {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      .animate-fade-in-fast {
+        display: inline-block;
+        animation: fade-in-fast 0.2s ease-out;
+      }
+      .step-connector {
+        transition: background-color 0.4s ease-in-out;
+      }
+      .step-dot {
+        transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+      }
+      .step-dot.active {
+        transform: scale(1.5);
+      }
+      @keyframes bob {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+      }
+      .animate-bob {
+        animation: bob 3s ease-in-out infinite;
+      }
+      
+      /* Teach a Tot Styles */
+      @keyframes blink {
+          0%, 90%, 100% { transform: scaleY(1); }
+          95% { transform: scaleY(0.1); }
+      }
+      @keyframes gentle-bob {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+      }
+      @keyframes thinking {
+          0%, 100% { transform: rotate(0deg) translateX(0); }
+          25% { transform: rotate(5deg) translateX(5px); }
+          75% { transform: rotate(-5deg) translateX(-5px); }
+      }
+      @keyframes happy-jump {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-15px) scale(1.05); }
+      }
+      @keyframes confused-shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+      }
+
+      .animate-blink { animation: blink 4s infinite; }
+      .animate-gentle-bob { animation: gentle-bob 3s ease-in-out infinite; }
+      .is-thinking { animation: thinking 1s ease-in-out infinite; }
+      .is-happy { animation: happy-jump 0.5s ease-in-out; }
+      .is-confused { animation: confused-shake 0.5s ease-in-out; }
+
+      .speech-bubble {
+        position: relative;
+        background: #ffffff;
+        border-radius: .75em;
+      }
+      .dark .speech-bubble {
+        background: #1f2937; /* slate-800 */
+      }
+      .speech-bubble:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border: 20px solid transparent;
+        border-top-color: #ffffff;
+        border-bottom: 0;
+        border-left: 0;
+        margin-left: -10px;
+        margin-bottom: -20px;
+      }
+      .dark .speech-bubble:after {
+        border-top-color: #1f2937; /* slate-800 */
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0"
+  }
+}
+</script>
+<script>
+  // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+  if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
