@@ -43,7 +43,7 @@ async function saveJson(file, data) {
 async function generateLessonPlan(topic) {
     // Removed ora spinner for Windows compatibility
     console.log(chalk.cyan(`\n(AI is researching "${topic}"... this takes ~5-10s)`));
-    
+
     const prompt = `
         You are an elite technical tutor. The user wants to learn: "${topic}".
         Generate a concise, high-density lesson plan for a CLI interface.
@@ -76,15 +76,15 @@ async function generateLessonPlan(topic) {
             contents: prompt,
             config: { responseMimeType: 'application/json' }
         });
-        
+
         let jsonText = result.text;
         // Clean markdown if present (just in case model ignores mime type slightly)
         if (typeof jsonText === 'string') {
             jsonText = jsonText.replace(/```json/g, '').replace(/```/g, '').trim();
         }
-        
+
         const lesson = JSON.parse(jsonText);
-        
+
         // Save to History immediately
         const history = await loadJson(HISTORY_FILE, { lessons: [] });
         const lessonId = crypto.randomUUID();
@@ -122,7 +122,7 @@ async function runLesson(lesson, readline) {
     for (const concept of lesson.concepts) {
         console.log(chalk.bold.bgBlue.white(`\n 🔹 ${concept.name} `));
         console.log(chalk.bold.white(concept.explanation));
-        
+
         if (concept.asciiArt) {
             console.log(chalk.yellow('\n' + concept.asciiArt));
         }
@@ -132,21 +132,25 @@ async function runLesson(lesson, readline) {
         }
 
         console.log(chalk.cyan(`\n❓ Question: ${concept.quiz.question}`));
-        concept.quiz.options.forEach((opt, i) => console.log(`   [${i+1}] ${opt}`));
+        concept.quiz.options.forEach((opt, i) => console.log(`   [${i + 1}] ${opt}`));
 
         let answer = await ask(chalk.greenBright('\nEnter choice (1-4) > '));
         const selectedIndex = parseInt(answer) - 1;
-        
+
         if (selectedIndex === concept.quiz.correctIndex) {
             console.log(chalk.bold.green("✅ Correct! ") + chalk.cyan(concept.quiz.explanation));
             if (!memory.mastered.includes(concept.name)) memory.mastered.push(concept.name);
+            // Remove from struggling if present (Move to Mastered)
+            memory.struggling = memory.struggling.filter(n => n !== concept.name);
         } else {
             console.log(chalk.bold.red("❌ Incorrect."));
             console.log(chalk.white(`The right answer was: ${concept.quiz.options[concept.quiz.correctIndex]}`));
             console.log(chalk.cyan(concept.quiz.explanation));
             if (!memory.struggling.includes(concept.name)) memory.struggling.push(concept.name);
+            // Remove from mastered if present (Regression)
+            memory.mastered = memory.mastered.filter(n => n !== concept.name);
         }
-        
+
         await ask(chalk.dim('\nPress Enter for next concept...'));
     }
 
@@ -158,22 +162,22 @@ async function showBrainMap() {
     const memory = await loadJson(MEMORY_FILE, { mastered: [], struggling: [], reviewing: [] });
     console.clear();
     console.log(chalk.bold.magenta("\n🧠 Neural Knowledge Map"));
-    
+
     console.log(chalk.red("\n🚨 Needs Focus:"));
-    if(memory.struggling.length === 0) console.log(chalk.dim("  (None - You are a genius!)"));
+    if (memory.struggling.length === 0) console.log(chalk.dim("  (None - You are a genius!)"));
     memory.struggling.forEach(m => console.log(`  • ${m}`));
 
     console.log(chalk.green("\n✅ Mastered:"));
-    if(memory.mastered.length === 0) console.log(chalk.dim("  (Start learning to fill this!)"));
+    if (memory.mastered.length === 0) console.log(chalk.dim("  (Start learning to fill this!)"));
     memory.mastered.forEach(m => console.log(`  • ${m}`));
-    
+
     console.log("\n");
 }
 
 async function showHistory(readline) {
     const ask = (q) => new Promise(resolve => readline.question(q, resolve));
     const history = await loadJson(HISTORY_FILE, { lessons: [] });
-    
+
     if (history.lessons.length === 0) {
         console.log(chalk.yellow("\n📜 No lesson history found."));
         await ask('Press Enter...');
@@ -182,7 +186,7 @@ async function showHistory(readline) {
 
     console.log(chalk.bold("\n📜 Lesson History:"));
     history.lessons.forEach((l, i) => {
-        console.log(`  [${i+1}] ${l.title} (${chalk.dim(l.topic)})`);
+        console.log(`  [${i + 1}] ${l.title} (${chalk.dim(l.topic)})`);
     });
 
     const choice = await ask('\nEnter number to replay (or 0 to back) > ');
@@ -204,10 +208,10 @@ async function sotaScan(readline) {
         } else {
             const latest = sotaFiles[0];
             const content = await fs.readFile(path.join(plansDir, latest), 'utf-8');
-            
+
             console.clear();
             console.log(chalk.bold.cyan(`\n🌐 SOTA Report: ${latest}\n`));
-            
+
             const lines = content.split('\n');
             for (const line of lines) {
                 if (line.startsWith('# ')) console.log(chalk.bold.magenta.underline(line.replace('# ', '')));
@@ -260,16 +264,16 @@ async function mainMenu() {
             readline.close();
             process.exit(0);
         }
-        
-        if (choice.trim() === '4') { 
-            await showBrainMap(); 
+
+        if (choice.trim() === '4') {
+            await showBrainMap();
             await ask('Press Enter to continue...');
         }
-        
+
         if (choice.trim() === '1') {
             const topic = await ask(chalk.yellow('Enter topic to learn > '));
             // Log moved inside generateLessonPlan to prevent duplicate
-            
+
             try {
                 const lesson = await generateLessonPlan(topic);
                 if (lesson) await runLesson(lesson, readline);
@@ -280,15 +284,15 @@ async function mainMenu() {
         }
 
         if (choice.trim() === '3') {
-            await showHistory(readline); 
+            await showHistory(readline);
         }
 
         if (choice.trim() === '2') {
-             const q = await loadJson(QUEUE_FILE, { queue: [] });
-             console.log(chalk.bold("\n⏳ Learning Queue:"));
-             if (q.queue.length === 0) console.log(chalk.dim("  (Empty)"));
-             q.queue.forEach((item, i) => console.log(`  ${i+1}. ${item.topic}`));
-             await ask('Press Enter...');
+            const q = await loadJson(QUEUE_FILE, { queue: [] });
+            console.log(chalk.bold("\n⏳ Learning Queue:"));
+            if (q.queue.length === 0) console.log(chalk.dim("  (Empty)"));
+            q.queue.forEach((item, i) => console.log(`  ${i + 1}. ${item.topic}`));
+            await ask('Press Enter...');
         }
 
         if (choice.trim() === '5') {
