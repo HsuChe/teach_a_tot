@@ -32,7 +32,7 @@ npm install
 Create a `.env` file in the root directory and add your API key:
 
 ```env
-VITE_GEMINI_API_KEY=AIzaSy......YourKeyHere
+VITE_GEMINI_API_KEY="YourKeyHere"
 ```
 
 ---
