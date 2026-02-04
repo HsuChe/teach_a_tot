@@ -23,3 +23,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# User data
+lessons_history.json
+metadata.json
+brain_map.json
